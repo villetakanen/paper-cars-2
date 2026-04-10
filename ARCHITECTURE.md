@@ -20,7 +20,8 @@ All game state lives in Svelte stores. There is no separate engine runtime. The 
 ## Module Boundaries
 
 ### Grid Manager (`src/lib/grid/`)
-- Owns the 2D grid array representing the track layout
+- Owns the fixed 16×16 2D grid representing the track layout
+- Each cell is either empty or contains one tile (type + rotation). No y-axis — height is implicit per tile type (bridge tiles are elevated).
 - Pure TypeScript logic — no rendering, no physics, no Svelte dependencies
 - Exports typed track data that other modules consume
 - Input: user placement actions. Output: track data structure.
@@ -43,7 +44,7 @@ All game state lives in Svelte stores. There is no separate engine runtime. The 
 - Reads from Physics Controller state: airtime, rotation, speed, loop completion, near-misses
 - Does NOT read from Renderer or UI
 - Emits score events that UI and Renderer can subscribe to (for HUD updates and visual feedback)
-- High scores persisted to localStorage, keyed by track hash
+- High scores persisted to localStorage, keyed by the serialized track URL string
 - No server calls — all local
 
 ### UI Layer (`src/lib/ui/`)
@@ -66,7 +67,7 @@ All game state lives in Svelte stores. There is no separate engine runtime. The 
 - Game mode state (Menu → Editor → Drive → Replay) lives in a Svelte store
 - Track data is the single shared format, defined in `src/lib/types/track.ts`
 - No server state. Everything is client-side. Tracks live in URLs.
-- High scores live in localStorage, keyed by track content hash (so the same track always maps to the same leaderboard, regardless of URL encoding)
+- High scores live in localStorage, keyed by the serialized track URL string (the URL is the track identity — no hashing, no indirection)
 - State transitions are explicit — no implicit mode detection
 
 ## Track Data as Contract
@@ -77,12 +78,12 @@ The track data format is the most architecturally sensitive surface. It is consu
 - Renderer (reads it for visuals)
 - URL serializer (encodes/decodes for sharing)
 
-Any change to the track format is a breaking change across all four consumers. The format is defined in `specs/track-format/spec.md` and enforced by the TypeScript type in `src/lib/types/track.ts`.
+Any change to the track format is a breaking change across all four consumers. The format is defined in `specs/track-format.spec.md` and enforced by the TypeScript type in `src/lib/types/track.ts`.
 
 ## Performance Targets
 
 - First contentful paint: < 2s on 4G
 - Time-to-interactive (first jump): < 10s from page load
 - Stable 60fps on mid-range laptop (2020 MacBook Air equivalent)
-- Track encode/decode: < 50ms for 100-piece tracks
+- Track encode/decode: < 5ms for a full 16×16 grid (256 cells)
 - Total bundle size: < 5MB including assets

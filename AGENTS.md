@@ -39,7 +39,7 @@
 ## Workflows
 
 Invoke via slash command. Each workflow injects the appropriate persona at invocation time.
-Definitions: `.antigravity/commands/`
+Definitions: `.agents/workflows/`
 
 | Command | Persona | Purpose |
 |---|---|---|
@@ -65,7 +65,7 @@ src/:
   lib/types/:      "Shared TypeScript types. Track format is the cross-module contract."
 
 specs/:            "Living Specs (Blueprint + Contract). One per feature domain."
-workflows/:        "Deterministic orchestration code (Workflow as Code pattern)."
+.agents/workflows/:  "Orchestration workflows (Workflow as Code pattern)."
 tests/:
   unit/:           "Vitest — pure functions, serialization, grid logic."
   e2e/:            "Playwright — browser integration, game loads, input response."
