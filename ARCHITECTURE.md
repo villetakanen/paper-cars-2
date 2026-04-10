@@ -22,7 +22,7 @@ All game state lives in Svelte stores. There is no separate engine runtime. The 
 ### Grid Manager (`src/lib/grid/`)
 - Owns the fixed 16×16 2D grid representing the track layout
 - Each cell is either empty or contains one tile (type + rotation). No y-axis — height is implicit per tile type (bridge tiles are elevated).
-- Pure TypeScript logic — no rendering, no physics, no Svelte dependencies
+- Pure logic — no rendering, no physics components. Svelte 5 runes (`$state`, `$derived`) are allowed for reactivity, but no UI components or DOM dependencies.
 - Exports typed track data that other modules consume
 - Input: user placement actions. Output: track data structure.
 
@@ -55,7 +55,7 @@ All game state lives in Svelte stores. There is no separate engine runtime. The 
 
 ## Boundary Rules
 
-- Grid Manager MUST NOT import from physics, scoring, rendering, or UI
+- Grid Manager MUST NOT import from physics, scoring, rendering, or UI components (Svelte logic primitives like `$state` are permitted)
 - Physics Controller MUST NOT import from scoring, rendering, or UI
 - Score Manager reads Physics Controller state only — MUST NOT import from Grid Manager, Renderer, or UI
 - Renderer MUST NOT mutate Grid Manager or Score Manager state — read only

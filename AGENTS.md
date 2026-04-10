@@ -57,7 +57,7 @@ Definitions: `.agents/workflows/`
 stack: Svelte 5 + TypeScript strict + Threlte + Rapier.js
 
 src/:
-  lib/grid/:       "Grid Manager — pure TS logic for track builder. No rendering."
+  lib/grid/:       "Grid Manager — track builder logic. Svelte 5 runes ($state/$derived) permitted; no UI components, no DOM."
   lib/physics/:    "Physics Controller — RaycastVehicle, collision meshes. No visuals."
   lib/scoring/:    "Score Manager — stunt detection, point calculation, localStorage high scores."
   lib/components/: "Threlte/Svelte 3D components — maps Grid data to Kenney assets. Toy cars, paper scenery."
@@ -89,9 +89,10 @@ This project uses Cascading Model Routing per ASDLC methodology:
 |---|---|
 | `VISION.md` | Product taste, aesthetic direction, decision heuristics, PC1 lessons |
 | `ARCHITECTURE.md` | Data flow, module boundaries, state management, performance targets |
-| `specs/game-physics/spec.md` | Car physics model, gravity, collisions, ramp behavior |
-| `specs/track-editor/spec.md` | Editor UX, piece palette, placement rules |
-| `specs/track-format/spec.md` | Track serialization, URL encoding, versioning |
-| `specs/rendering/spec.md` | Visual style: toy cars + paper scenery, shaders, camera |
-| `specs/scoring/spec.md` | Stunt detection, point values, multipliers, localStorage high scores |
-| `specs/testing/spec.md` | Test layers, tools per layer, boundary mocking strategy |
+| `specs/game-physics.spec.md` | Car physics model, gravity, collisions, ramp behavior |
+| `specs/grid-manager.spec.md` | Grid state engine, placement API, invariants |
+| `specs/track-editor.spec.md` | Editor UX, piece palette, placement rules |
+| `specs/track-format.spec.md` | Track serialization, URL encoding, versioning |
+| `specs/rendering.spec.md` | Visual style: toy cars + paper scenery, shaders, camera |
+| `specs/scoring.spec.md` | Stunt detection, point values, multipliers, localStorage high scores |
+| `specs/testing.spec.md` | Test layers, tools per layer, boundary mocking strategy |
