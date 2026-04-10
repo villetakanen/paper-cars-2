@@ -1,37 +1,53 @@
 /**
- * Paper Cars 2 - Track Format Types
- * This file is the primary cross-module contract.
- * See specs/track-format.spec.md for details.
+ * Core Tile Types supported by the track format.
+ * Matches specs/track-format.spec.md
  */
+export enum TileType {
+	STRAIGHT = "STRAIGHT",
+	CURVE = "CURVE",
+	RAMP = "RAMP",
+	LOOP = "LOOP",
+	BRIDGE = "BRIDGE",
+	START_FINISH = "START_FINISH",
+}
 
-export type TileType =
-	| "STRAIGHT"
-	| "CURVE"
-	| "RAMP"
-	| "LOOP"
-	| "BRIDGE"
-	| "START_FINISH";
-
+/**
+ * Valid rotation values in degrees clockwise.
+ */
 export type Rotation = 0 | 90 | 180 | 270;
 
+/**
+ * Individual Tile data structure.
+ * Position is implicit from grid coordinates.
+ */
 export interface TrackTile {
-	/** The tile variety */
 	type: TileType;
-	/** Clockwise rotation in degrees */
 	rotation: Rotation;
 }
 
-/** Fixed 16×16 grid. null = empty cell. */
+/**
+ * A fixed 16x16 2D grid of tiles.
+ * Grid is row-major: [rowIndex][columnIndex] => [z][x]
+ */
 export type TrackGrid = (TrackTile | null)[][];
 
-export const GRID_SIZE = 16;
-
+/**
+ * Top-level Track Data structure.
+ * This is the primary contract for sharing and persistence.
+ */
 export interface TrackData {
-	/** Schema version — currently 1 */
-	version: 1;
-	/** 16×16 grid of tiles. Position is implicit from array indices [x][z]. */
+	/**
+	 * Format version. Currently 1.
+	 */
+	version: number;
+	/**
+	 * The 16x16 grid of tiles.
+	 */
 	grid: TrackGrid;
-	/** Editor sugar only — not serialized, not part of track identity */
+	/**
+	 * Optional metadata for display/editor purposes.
+	 * Not used for track identity or URL serialization.
+	 */
 	metadata?: {
 		name?: string;
 		author?: string;

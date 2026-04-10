@@ -64,10 +64,11 @@ Based on the critic's verdict:
 ### Step 4 — Finish
 
 Report to the user:
-- Summary of what was implemented
-- Number of dev-critic cycles it took
-- Final critic verdict (and any notes)
-- Suggest running `/ship` to commit and push
+- **Summary**: What was implemented.
+- **Verdict**: Final critic verdict (and any notes).
+- > [!NOTE]
+  > **Assemble Stats**: Completed in N cycles (Dev-Critic round-trips).
+- **Next Steps**: Suggest running `/ship` to commit and push.
 
 ## Sub-Agent Model Policy
 
