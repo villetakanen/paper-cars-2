@@ -1,3 +1,9 @@
+---
+name: planner
+description: "Decompose a feature into atomic, dependency-ordered GitHub issues"
+argument-hint: "[feature name, spec reference, or description]"
+---
+
 Plan atomically deliverable tasks for the following feature or request:
 
 $ARGUMENTS

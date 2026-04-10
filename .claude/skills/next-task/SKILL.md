@@ -1,3 +1,9 @@
+---
+name: next-task
+description: "Pick the highest-value/lowest-effort task from open GitHub issues"
+argument-hint: ""
+---
+
 Pick the next task from the backlog using the fast/value principle.
 
 ## Instructions
@@ -21,7 +27,7 @@ For each open issue, assess two dimensions:
 - Slow: Half day+, requires design decisions, cross-module changes, or new shared types
 
 **Value** (what does shipping this unlock?):
-- High: Unblocks other issues, visible to players, required for core gameplay loop (Build → Drive → Score → Share)
+- High: Unblocks other issues, visible to players, required for core gameplay loop (Build > Drive > Score > Share)
 - Medium: Improves quality, fills a gap, nice to have for playability
 - Low: Polish, documentation that doesn't block anything
 
@@ -33,7 +39,7 @@ Also consider:
 - **Dependencies**: Can this issue be done now, or does it depend on something unfinished?
 - **Duplicates**: Are any issues duplicates? Note them.
 - **Momentum**: Does this continue a thread of recent work?
-- **Gameplay loop**: Prioritize tasks that close gaps in the Build → Drive → Score → Share loop
+- **Gameplay loop**: Prioritize tasks that close gaps in the Build > Drive > Score > Share loop
 
 ### Step 4: Output
 

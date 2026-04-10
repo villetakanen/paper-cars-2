@@ -1,3 +1,9 @@
+---
+name: dev
+description: "Implement a task against a spec using subagents for parallel work"
+argument-hint: "[issue number, task description, or spec reference]"
+---
+
 Implement the following task:
 
 $ARGUMENTS

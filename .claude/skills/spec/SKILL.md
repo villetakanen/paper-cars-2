@@ -1,3 +1,9 @@
+---
+name: spec
+description: "Write or update an ASDLC living spec (Blueprint + Contract) for a feature"
+argument-hint: "[feature name or description]"
+---
+
 Write an ASDLC spec for the following feature request:
 
 $ARGUMENTS

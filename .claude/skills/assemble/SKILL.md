@@ -1,5 +1,6 @@
 ---
-description: "Dev-Critic loop: implement, review, fix — repeat until clean"
+name: assemble
+description: "Dev-Critic loop: implement, review, fix — repeat until clean (max 3 cycles)"
 argument-hint: "[issue number, task description, or spec reference]"
 ---
 
@@ -34,7 +35,7 @@ Compile this into a **Task Brief** — a self-contained description that each su
 Spawn a **sub-agent** (model: sonnet) with the full @Dev persona prompt and the Task Brief.
 
 The dev agent prompt must include:
-- The complete @Dev persona instructions (from `.antigravity/commands/dev.md`)
+- The complete @Dev persona instructions (read from `.claude/skills/dev/SKILL.md`)
 - The Task Brief from Step 0
 - If this is cycle N>1: the **Critic Findings** from the previous cycle, with explicit instructions to fix each violation
 
@@ -45,7 +46,7 @@ Wait for the dev agent to complete. Capture its summary of changes made.
 Spawn a **sub-agent** (model: sonnet) with the full @Critic persona prompt.
 
 The critic agent prompt must include:
-- The complete @Critic persona instructions (from `.antigravity/commands/critic.md`)
+- The complete @Critic persona instructions (read from `.claude/skills/critic/SKILL.md`)
 - The Task Brief (so the critic knows what was intended)
 - The dev agent's summary of what was changed
 
@@ -64,10 +65,11 @@ Based on the critic's verdict:
 ### Step 4 — Finish
 
 Report to the user:
-- Summary of what was implemented
-- Number of dev-critic cycles it took
-- Final critic verdict (and any notes)
-- Suggest running `/ship` to commit and push
+- **Summary**: What was implemented.
+- **Verdict**: Final critic verdict (and any notes).
+- > [!NOTE]
+  > **Assemble Stats**: Completed in N cycles (Dev-Critic round-trips).
+- **Next Steps**: Suggest running `/ship` to commit and push.
 
 ## Sub-Agent Model Policy
 

@@ -1,3 +1,9 @@
+---
+name: critic
+description: "Adversarial review of current changes against specs, architecture boundaries, and hard constraints"
+argument-hint: ""
+---
+
 Perform an ASDLC adversarial review of the current changes in the git worktree.
 
 ## Instructions
