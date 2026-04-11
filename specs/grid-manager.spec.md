@@ -39,6 +39,9 @@ The Grid Manager is a singleton reactive store built using Svelte 5 `$state`.
 - `loadTrack(data: TrackData)`:
   - Validates that the track contains exactly one `START_FINISH` tile. Throws an `Error` if validation fails — no state mutation occurs before validation completes.
   - On success, atomically replaces the current grid state with the provided track data.
+- `getTrackData(): TrackData`:
+  - Returns a complete `TrackData` object (`{ version: 1, grid }`) with a deep copy of the grid.
+  - Callers cannot mutate internal state through the returned object.
 
 ### Invariants
 1. **Fixed Dimensions**: The grid is always exactly 16x16. Operations outside these bounds must be silently ignored (no-op).
@@ -59,7 +62,7 @@ The Grid Manager is a singleton reactive store built using Svelte 5 `$state`.
 ## Contract (Quality)
 
 ### Definition of Done
-- [ ] Reactive store implemented in `src/lib/grid/store.ts`.
+- [ ] Reactive store implemented in `src/lib/grid/store.svelte.ts`.
 - [ ] `placeTile` correctly handles the `START_FINISH` singularity (removing previous start tiles).
 - [ ] `rotateTile` cycles through 0, 90, 180, 270 degrees.
 - [ ] Grid dimensions are strictly enforced (16x16).

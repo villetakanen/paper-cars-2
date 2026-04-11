@@ -1,11 +1,13 @@
 import {
 	type Rotation,
 	TileType,
+	type TrackData,
 	type TrackGrid,
 	type TrackTile,
 } from "../types/track";
 
 const GRID_SIZE = 16;
+const TRACK_VERSION = 1;
 
 function createEmptyGrid(): TrackGrid {
 	return Array.from({ length: GRID_SIZE }, () =>
@@ -77,6 +79,25 @@ class GridStore {
 
 	clearGrid(): void {
 		this._grid = createEmptyGrid();
+	}
+
+	loadTrack(data: TrackData): void {
+		let count = 0;
+		for (const row of data.grid) {
+			for (const cell of row) {
+				if (cell?.type === TileType.START_FINISH) count++;
+			}
+		}
+		if (count !== 1) {
+			throw new Error(
+				`loadTrack: track must contain exactly one START_FINISH tile, found ${count}`,
+			);
+		}
+		this._grid = structuredClone(data.grid);
+	}
+
+	getTrackData(): TrackData {
+		return { version: TRACK_VERSION, grid: structuredClone(this._grid) };
 	}
 }
 

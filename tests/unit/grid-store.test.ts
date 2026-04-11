@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { gridStore } from "../../src/lib/grid/index";
-import { TileType } from "../../src/lib/types/track";
+import { TileType, type TrackData } from "../../src/lib/types/track";
 
 beforeEach(() => {
 	gridStore.clearGrid();
@@ -306,5 +306,115 @@ describe("Grid Store — startPosition", () => {
 	it("returns position at grid corners correctly", () => {
 		gridStore.placeTile(15, 15, TileType.START_FINISH, 270);
 		expect(gridStore.startPosition).toEqual([15, 15]);
+	});
+});
+
+describe("Grid Store — loadTrack", () => {
+	it("successfully loads a valid TrackData and grid matches", () => {
+		const data: TrackData = {
+			version: 1,
+			grid: (() => {
+				const g = Array.from({ length: 16 }, () =>
+					Array<null>(16).fill(null),
+				) as TrackData["grid"];
+				g[0][0] = { type: TileType.START_FINISH, rotation: 0 };
+				g[1][1] = { type: TileType.STRAIGHT, rotation: 90 };
+				return g;
+			})(),
+		};
+		gridStore.loadTrack(data);
+		expect(gridStore.grid[0][0]).toEqual({
+			type: TileType.START_FINISH,
+			rotation: 0,
+		});
+		expect(gridStore.grid[1][1]).toEqual({
+			type: TileType.STRAIGHT,
+			rotation: 90,
+		});
+	});
+
+	it("throws an Error and leaves grid unchanged when no START_FINISH tile", () => {
+		gridStore.placeTile(3, 3, TileType.STRAIGHT, 0);
+		const snapshot = gridStore.grid;
+
+		const data: TrackData = {
+			version: 1,
+			grid: Array.from({ length: 16 }, () =>
+				Array<null>(16).fill(null),
+			) as TrackData["grid"],
+		};
+		expect(() => gridStore.loadTrack(data)).toThrow(Error);
+		expect(gridStore.grid).toEqual(snapshot);
+	});
+
+	it("throws an Error and leaves grid unchanged when two START_FINISH tiles", () => {
+		gridStore.placeTile(3, 3, TileType.STRAIGHT, 0);
+		const snapshot = gridStore.grid;
+
+		const data: TrackData = {
+			version: 1,
+			grid: (() => {
+				const g = Array.from({ length: 16 }, () =>
+					Array<null>(16).fill(null),
+				) as TrackData["grid"];
+				g[0][0] = { type: TileType.START_FINISH, rotation: 0 };
+				g[1][1] = { type: TileType.START_FINISH, rotation: 0 };
+				return g;
+			})(),
+		};
+		expect(() => gridStore.loadTrack(data)).toThrow(Error);
+		expect(gridStore.grid).toEqual(snapshot);
+	});
+
+	it("atomically replaces the entire grid state on success", () => {
+		gridStore.placeTile(0, 0, TileType.START_FINISH, 0);
+		gridStore.placeTile(5, 5, TileType.CURVE, 180);
+
+		const data: TrackData = {
+			version: 1,
+			grid: (() => {
+				const g = Array.from({ length: 16 }, () =>
+					Array<null>(16).fill(null),
+				) as TrackData["grid"];
+				g[7][7] = { type: TileType.START_FINISH, rotation: 90 };
+				return g;
+			})(),
+		};
+		gridStore.loadTrack(data);
+		// Old tiles are gone
+		expect(gridStore.grid[0][0]).toBeNull();
+		expect(gridStore.grid[5][5]).toBeNull();
+		// New tile is present
+		expect(gridStore.grid[7][7]).toEqual({
+			type: TileType.START_FINISH,
+			rotation: 90,
+		});
+	});
+});
+
+describe("Grid Store — getTrackData", () => {
+	it("returns a TrackData object with version 1", () => {
+		const td = gridStore.getTrackData();
+		expect(td.version).toBe(1);
+	});
+
+	it("grid in returned TrackData matches current store state", () => {
+		gridStore.placeTile(2, 4, TileType.START_FINISH, 180);
+		const td = gridStore.getTrackData();
+		expect(td.grid[4][2]).toEqual({
+			type: TileType.START_FINISH,
+			rotation: 180,
+		});
+	});
+
+	it("mutating the returned TrackData does not affect the store", () => {
+		gridStore.placeTile(1, 1, TileType.STRAIGHT, 0);
+		gridStore.placeTile(0, 0, TileType.START_FINISH, 0);
+		const td = gridStore.getTrackData();
+		td.grid[1][1] = null;
+		expect(gridStore.grid[1][1]).toEqual({
+			type: TileType.STRAIGHT,
+			rotation: 0,
+		});
 	});
 });
