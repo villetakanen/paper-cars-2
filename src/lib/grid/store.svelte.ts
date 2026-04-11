@@ -97,7 +97,10 @@ class GridStore {
 	}
 
 	getTrackData(): TrackData {
-		return { version: TRACK_VERSION, grid: $state.snapshot(this._grid) as TrackGrid };
+		return {
+			version: TRACK_VERSION,
+			grid: $state.snapshot(this._grid) as TrackGrid,
+		};
 	}
 }
 
