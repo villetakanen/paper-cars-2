@@ -6,6 +6,7 @@ import Environment from "./Environment.svelte";
 import TileMesh from "./TileMesh.svelte";
 </script>
 
+<div class="scene-container">
 <Canvas>
 	<Environment />
 	<CameraRig mode="editor" />
@@ -25,11 +26,11 @@ import TileMesh from "./TileMesh.svelte";
 		{/each}
 	{/each}
 </Canvas>
+</div>
 
 <style>
-	:global(canvas) {
-		display: block;
-		width: 100% !important;
-		height: 100% !important;
+	.scene-container {
+		width: 100%;
+		height: 100%;
 	}
 </style>
