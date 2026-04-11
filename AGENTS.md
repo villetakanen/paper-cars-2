@@ -36,48 +36,6 @@
 - Write or update tests for any new functionality
 - Use micro-commits: one logical change per commit
 
-## Workflows
-
-Invoke via slash command or shorthand. Each workflow injects the appropriate persona at invocation time.
-Definitions: `.agents/skills/`
-
-| Command | Persona | Purpose |
-|---|---|---|
-| `/skill:spec` | @Spec | Write or update a living spec (Blueprint + Contract) |
-| `/skill:dev` | @Dev | Implement a task against a spec, using subagents |
-| `/skill:critic` | @Critic | Adversarial review of current changes against specs + boundaries |
-| `/skill:ship` | @Ship | Lint → build → test → spec-verify → commit → push |
-| `/skill:planner` | @Planner | Decompose a feature into atomic, dependency-ordered GitHub issues |
-| `/skill:assemble` | @Assemble | Dev→Critic loop: implement + review until clean (max 3 cycles) |
-| `/skill:next-task` | @Backlog | Pick the highest-value/lowest-effort task from open issues |
-
-### Multi-model Assemble
-
-When the user says **"assemble N"** (where N is a GitHub issue number), run:
-
-```bash
-./scripts/assemble.sh N
-```
-
-This spawns a fully automated Dev→Critic loop using separate models with clean contexts:
-
-| Role | Model selector | Provider | Tools |
-|---|---|---|---|
-| Dev (implement) | `gemini-3-flash-preview` | `google-gemini-cli` | read, bash, edit, write |
-| Critic (review) | `gpt-5-mini` | `github-copilot` | read, bash |
-
-The script:
-1. Generates a Task Brief from the issue (`gh issue view`), relevant specs, and project context
-2. Runs Dev sub-agent (`pi -p --no-session`) with the dev skill and full tool access
-3. Runs Critic sub-agent (`pi -p --no-session`) with the critic skill, git diff, and read-only tools
-4. Parses the critic verdict: **Ship it** → done, **Fix before commit** → re-run Dev with findings, **Discuss** → stop for human
-5. Circuit-breaker at 3 cycles (override: `./scripts/assemble.sh N --max-cycles 5`)
-
-After completion, report the verdict and suggest `/skill:ship` if clean.
-
-Helper scripts live in `.agents/skills/assemble/scripts/`.
-Model selectors can be overridden via env vars: `DEV_MODEL`, `DEV_PROVIDER`, `CRITIC_MODEL`, `CRITIC_PROVIDER`.
-
 ## Context Map
 
 ```yaml
@@ -99,16 +57,6 @@ tests/:
 
 assets/:           "Kenney.nl CC0 3D kits only. No other asset sources."
 ```
-
-## Model Routing
-
-This project uses Cascading Model Routing per ASDLC methodology:
-
-| Task | Model Tier | Rationale |
-|---|---|---|
-| Spec authoring, architecture, epic decomposition | Frontier (Opus 4.6 / Gemini 3 High) | Requires deep reasoning, taste alignment |
-| Implementation, iteration, test writing | Fast (Gemini 3 Flash) | High throughput, low latency, well-constrained by Specs |
-| Adversarial review | Frontier or cross-model | Must catch violations the builder model might miss |
 
 ## Documentation Index
 
