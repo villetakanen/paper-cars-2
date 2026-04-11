@@ -1,7 +1,9 @@
 <script lang="ts">
 import { Canvas } from "@threlte/core";
 import { gridStore } from "../grid";
+import { gameModeStore } from "../stores/gameMode.svelte";
 import CameraRig from "./CameraRig.svelte";
+import CarMesh from "./CarMesh.svelte";
 import Environment from "./Environment.svelte";
 import TileMesh from "./TileMesh.svelte";
 </script>
@@ -9,7 +11,7 @@ import TileMesh from "./TileMesh.svelte";
 <div class="scene-container">
 <Canvas>
 	<Environment />
-	<CameraRig mode="editor" />
+	<CameraRig mode={gameModeStore.current} />
 
 	{#each gridStore.grid as row, z}
 		{#each row as cell, x}
@@ -25,6 +27,10 @@ import TileMesh from "./TileMesh.svelte";
 			{/if}
 		{/each}
 	{/each}
+
+	{#if gameModeStore.current === "drive"}
+		<CarMesh />
+	{/if}
 </Canvas>
 </div>
 

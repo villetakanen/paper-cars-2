@@ -327,6 +327,23 @@ export class PhysicsController {
 		const world = new RAPIER.World({ x: 0, y: PHYSICS_GRAVITY_Y, z: 0 });
 		world.timestep = PHYSICS_TIMESTEP;
 
+		// Ground plane — covers entire grid + margin so the car never falls into void.
+		// Sits at y = -0.025 (just below tile slabs at y = 0.025) so track tiles
+		// take priority for wheel raycasts but the car always has something beneath it.
+		const gridExtent = trackData.grid.length * TILE_SIZE;
+		const groundMargin = gridExtent; // equal margin around the grid
+		const groundHalfSize = gridExtent / 2 + groundMargin;
+		const groundCentreX = (gridExtent - TILE_SIZE) / 2;
+		const groundCentreZ = (gridExtent - TILE_SIZE) / 2;
+		const groundDesc = RAPIER.ColliderDesc.cuboid(
+			groundHalfSize,
+			SLAB_HALF_Y,
+			groundHalfSize,
+		)
+			.setTranslation(groundCentreX, -SLAB_HALF_Y, groundCentreZ)
+			.setFriction(0.8);
+		world.createCollider(groundDesc);
+
 		// Build static colliders for every non-null tile
 		for (let rowIdx = 0; rowIdx < trackData.grid.length; rowIdx++) {
 			const row = trackData.grid[rowIdx];
