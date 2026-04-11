@@ -102,6 +102,20 @@ class GridStore {
 			grid: $state.snapshot(this._grid) as TrackGrid,
 		};
 	}
+
+	get totalTileCount(): number {
+		let count = 0;
+		for (const row of this._grid) {
+			for (const cell of row) {
+				if (cell !== null) count++;
+			}
+		}
+		return count;
+	}
 }
 
 export const gridStore = new GridStore();
+
+if (typeof window !== "undefined") {
+	window.gridStore = gridStore;
+}
