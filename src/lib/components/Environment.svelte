@@ -1,0 +1,18 @@
+<script lang="ts">
+import { T } from "@threlte/core";
+import { GRID_SIZE, TILE_SIZE } from "./constants";
+
+const groundSize = GRID_SIZE * TILE_SIZE + 4; // extend slightly beyond the grid
+</script>
+
+<!-- Ground plane: cardboard/paper colour, rotated to lie flat on XZ -->
+<T.Mesh rotation.x={-Math.PI / 2} position={[0, 0, 0]}>
+	<T.PlaneGeometry args={[groundSize, groundSize]} />
+	<T.MeshStandardMaterial color="#c4a882" roughness={1} metalness={0} />
+</T.Mesh>
+
+<!-- Directional light: desk-lamp style, warm white -->
+<T.DirectionalLight position={[10, 15, 10]} intensity={2} color="#fff8f0" />
+
+<!-- Ambient light: soft warm fill so no area is fully dark -->
+<T.AmbientLight intensity={0.4} color="#ffeedd" />
