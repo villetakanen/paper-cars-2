@@ -20,6 +20,27 @@ function isOutOfBounds(x: number, z: number): boolean {
 class GridStore {
 	private _grid: TrackGrid = $state(createEmptyGrid());
 
+	isValid: boolean = $derived.by(() => {
+		let count = 0;
+		for (const row of this._grid) {
+			for (const cell of row) {
+				if (cell?.type === TileType.START_FINISH) count++;
+			}
+		}
+		return count === 1;
+	});
+
+	startPosition: [number, number] | null = $derived.by(() => {
+		for (let z = 0; z < GRID_SIZE; z++) {
+			for (let x = 0; x < GRID_SIZE; x++) {
+				if (this._grid[z][x]?.type === TileType.START_FINISH) {
+					return [x, z];
+				}
+			}
+		}
+		return null;
+	});
+
 	get grid(): TrackGrid {
 		return structuredClone(this._grid);
 	}
@@ -39,6 +60,14 @@ class GridStore {
 		}
 
 		this._grid[z][x] = { type, rotation };
+	}
+
+	rotateTile(x: number, z: number): void {
+		if (isOutOfBounds(x, z)) return;
+		const tile = this._grid[z][x];
+		if (tile === null) return;
+		const nextRotation = ((tile.rotation + 90) % 360) as Rotation;
+		this._grid[z][x] = { type: tile.type, rotation: nextRotation };
 	}
 
 	removeTile(x: number, z: number): void {

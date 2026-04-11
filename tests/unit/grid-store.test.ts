@@ -179,3 +179,132 @@ describe("Grid Store — START_FINISH singularity", () => {
 		});
 	});
 });
+
+describe("Grid Store — rotateTile", () => {
+	it("rotates a tile from 0 to 90", () => {
+		gridStore.placeTile(0, 0, TileType.STRAIGHT, 0);
+		gridStore.rotateTile(0, 0);
+		expect(gridStore.grid[0][0]).toEqual({
+			type: TileType.STRAIGHT,
+			rotation: 90,
+		});
+	});
+
+	it("rotates a tile from 90 to 180", () => {
+		gridStore.placeTile(1, 1, TileType.STRAIGHT, 90);
+		gridStore.rotateTile(1, 1);
+		expect(gridStore.grid[1][1]).toEqual({
+			type: TileType.STRAIGHT,
+			rotation: 180,
+		});
+	});
+
+	it("rotates a tile from 180 to 270", () => {
+		gridStore.placeTile(2, 2, TileType.CURVE, 180);
+		gridStore.rotateTile(2, 2);
+		expect(gridStore.grid[2][2]).toEqual({
+			type: TileType.CURVE,
+			rotation: 270,
+		});
+	});
+
+	it("wraps rotation from 270 back to 0 (Gherkin scenario: cycling rotation)", () => {
+		gridStore.placeTile(0, 0, TileType.STRAIGHT, 270);
+		gridStore.rotateTile(0, 0);
+		expect(gridStore.grid[0][0]).toEqual({
+			type: TileType.STRAIGHT,
+			rotation: 0,
+		});
+	});
+
+	it("rotateTile on an empty cell is a silent no-op", () => {
+		expect(() => gridStore.rotateTile(5, 5)).not.toThrow();
+		expect(gridStore.grid[5][5]).toBeNull();
+	});
+
+	it("rotateTile out of bounds is a silent no-op", () => {
+		expect(() => gridStore.rotateTile(16, 0)).not.toThrow();
+		expect(() => gridStore.rotateTile(0, 16)).not.toThrow();
+		expect(() => gridStore.rotateTile(-1, 0)).not.toThrow();
+	});
+
+	it("does not change the tile type when rotating", () => {
+		gridStore.placeTile(3, 3, TileType.RAMP, 0);
+		gridStore.rotateTile(3, 3);
+		expect(gridStore.grid[3][3]?.type).toBe(TileType.RAMP);
+	});
+});
+
+describe("Grid Store — isValid", () => {
+	it("returns false on an empty grid", () => {
+		expect(gridStore.isValid).toBe(false);
+	});
+
+	it("returns false when only non-START_FINISH tiles exist", () => {
+		gridStore.placeTile(0, 0, TileType.STRAIGHT, 0);
+		gridStore.placeTile(1, 1, TileType.CURVE, 90);
+		expect(gridStore.isValid).toBe(false);
+	});
+
+	it("returns true after placing exactly one START_FINISH (Gherkin: Validity State)", () => {
+		gridStore.placeTile(0, 0, TileType.STRAIGHT, 0);
+		expect(gridStore.isValid).toBe(false);
+		gridStore.placeTile(5, 5, TileType.START_FINISH, 0);
+		expect(gridStore.isValid).toBe(true);
+	});
+
+	it("returns false after removing the START_FINISH tile", () => {
+		gridStore.placeTile(5, 5, TileType.START_FINISH, 0);
+		expect(gridStore.isValid).toBe(true);
+		gridStore.removeTile(5, 5);
+		expect(gridStore.isValid).toBe(false);
+	});
+
+	it("returns true after moving START_FINISH to a new position", () => {
+		gridStore.placeTile(2, 2, TileType.START_FINISH, 0);
+		gridStore.placeTile(8, 8, TileType.START_FINISH, 0);
+		expect(gridStore.isValid).toBe(true);
+	});
+
+	it("returns false after clearGrid", () => {
+		gridStore.placeTile(0, 0, TileType.START_FINISH, 0);
+		gridStore.clearGrid();
+		expect(gridStore.isValid).toBe(false);
+	});
+});
+
+describe("Grid Store — startPosition", () => {
+	it("returns null on an empty grid", () => {
+		expect(gridStore.startPosition).toBeNull();
+	});
+
+	it("returns [x, z] after placing a START_FINISH tile", () => {
+		gridStore.placeTile(3, 7, TileType.START_FINISH, 0);
+		expect(gridStore.startPosition).toEqual([3, 7]);
+	});
+
+	it("updates when START_FINISH is moved to a new position", () => {
+		gridStore.placeTile(2, 2, TileType.START_FINISH, 0);
+		expect(gridStore.startPosition).toEqual([2, 2]);
+		gridStore.placeTile(10, 12, TileType.START_FINISH, 90);
+		expect(gridStore.startPosition).toEqual([10, 12]);
+	});
+
+	it("returns null after removing the START_FINISH tile", () => {
+		gridStore.placeTile(5, 5, TileType.START_FINISH, 0);
+		expect(gridStore.startPosition).toEqual([5, 5]);
+		gridStore.removeTile(5, 5);
+		expect(gridStore.startPosition).toBeNull();
+	});
+
+	it("returns null after clearGrid", () => {
+		gridStore.placeTile(0, 0, TileType.START_FINISH, 0);
+		gridStore.clearGrid();
+		expect(gridStore.startPosition).toBeNull();
+	});
+
+	it("returns position at grid corners correctly", () => {
+		gridStore.placeTile(15, 15, TileType.START_FINISH, 270);
+		expect(gridStore.startPosition).toEqual([15, 15]);
+	});
+});
