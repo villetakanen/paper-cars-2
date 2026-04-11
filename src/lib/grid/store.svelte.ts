@@ -44,7 +44,7 @@ class GridStore {
 	});
 
 	get grid(): TrackGrid {
-		return structuredClone(this._grid);
+		return $state.snapshot(this._grid) as TrackGrid;
 	}
 
 	placeTile(x: number, z: number, type: TileType, rotation: Rotation): void {
@@ -97,7 +97,7 @@ class GridStore {
 	}
 
 	getTrackData(): TrackData {
-		return { version: TRACK_VERSION, grid: structuredClone(this._grid) };
+		return { version: TRACK_VERSION, grid: $state.snapshot(this._grid) as TrackGrid };
 	}
 }
 
