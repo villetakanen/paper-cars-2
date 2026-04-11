@@ -55,6 +55,18 @@ const TILE_ASSETS: Record<TileType, string> = {
 
 Assets are loaded via Threlte's `useGltf()` hook from the `@threlte/extras` package. Models are sourced from Kenney.nl CC0 kits and placed in `static/assets/tiles/`.
 
+> **Outstanding:** As of Epic 3 implementation, the `static/assets/tiles/` directory and the six `.glb` files do not yet exist. The renderer code is complete; the actual Kenney.nl model files must be downloaded and placed in `static/assets/tiles/` before the scene renders 3D tiles. Until then, the canvas renders only the environment (ground plane, lighting) with no tile geometry. Acquiring the assets is a required step to close Epic 3.
+
+#### `useGltf` Capture-at-Mount Pattern
+
+Threlte's `useGltf()` call-site must receive a static string URL — it cannot be passed a reactive value and re-called when the value changes. `TileMesh.svelte` works around this by capturing the `tileType` prop once at mount:
+
+```svelte
+const gltf = useGltf(TILE_ASSETS[tileType]);  // captured at mount
+```
+
+When a tile's type changes (e.g. STRAIGHT → CURVE), the parent `TrackScene.svelte` destroys and recreates the `TileMesh` component using a `{#key cell.type}` block. This is the intended reactivity pattern. The Svelte compiler emits a `state_referenced_locally` warning on this line; the warning is expected and safe to ignore because the keyed-recreation strategy guarantees a fresh component for each tile type.
+
 #### Grid-to-World Coordinate Mapping
 
 Grid coordinates (integer `x`, `z` in range 0–15) map to world positions:
@@ -70,8 +82,11 @@ This is an exported constant so Physics can use the same mapping for collision g
 **New API surface:** `src/lib/components/constants.ts`
 
 ```typescript
-export const TILE_SIZE = 1.0;
+export const TILE_SIZE = 1.0;  // world units per grid cell; shared with Physics
+export const GRID_SIZE = 16;   // grid is always 16×16; shared by CameraRig and Environment
 ```
+
+`GRID_SIZE` is consumed by `CameraRig.svelte` (to centre the camera on the grid) and `Environment.svelte` (to size the ground plane). It is not exported for Physics — Physics derives grid dimensions from `TrackData.grid.length` at runtime, not this constant.
 
 #### Integration Points
 
@@ -95,18 +110,20 @@ export const TILE_SIZE = 1.0;
 
 ### Definition of Done
 
-- [ ] `TrackScene.svelte` renders a Threlte `<Canvas>` and reads `gridStore.grid` reactively.
-- [ ] `TileMesh.svelte` renders the correct `.glb` model for each `TileType` at the correct grid position and rotation.
-- [ ] Asset manifest (`assets.ts`) maps all six `TileType` values to `.glb` paths.
-- [ ] `TILE_SIZE` constant is exported from `constants.ts` for cross-module use.
-- [ ] `Environment.svelte` renders a ground plane, directional light, and ambient light.
-- [ ] `CameraRig.svelte` provides orbit controls that work in editor mode.
-- [ ] Placing/removing tiles in Grid Manager reactively updates the 3D scene (no page reload).
-- [ ] Stable 60fps with a full 16x16 grid on a mid-range laptop (2020 MacBook Air equivalent).
+- [x] `TrackScene.svelte` renders a Threlte `<Canvas>` and reads `gridStore.grid` reactively.
+- [x] `TileMesh.svelte` renders the correct `.glb` model for each `TileType` at the correct grid position and rotation (component code complete; blocked on assets).
+- [x] Asset manifest (`assets.ts`) maps all six `TileType` values to `.glb` paths.
+- [x] `TILE_SIZE` and `GRID_SIZE` constants exported from `constants.ts` for cross-module use.
+- [x] `Environment.svelte` renders a ground plane with paper/cardboard material (`#c4a882`, `roughness: 1`), warm directional light, and ambient fill.
+- [x] `CameraRig.svelte` provides orbit controls that work in editor mode.
+- [x] Placing/removing tiles in Grid Manager reactively updates the 3D scene (no page reload). (`{#key cell.type}` pattern ensures component recreation on tile-type change.)
+- [ ] **All six `.glb` model files present in `static/assets/tiles/`** — Kenney.nl CC0 assets must be downloaded and placed before tile geometry renders. *(Outstanding blocker for visible track.)*
+- [ ] Stable 60fps with a full 16x16 grid on a mid-range laptop (2020 MacBook Air equivalent). *(Blocked on assets.)*
 - [ ] Total asset payload for all tile models < 2MB (gzipped).
-- [ ] Zero imports from `src/lib/physics/`, `src/lib/scoring/`, or `src/lib/ui/`.
-- [ ] Unit tests for asset manifest mapping (all TileType values covered).
-- [ ] E2E test: page loads, canvas renders, at least one tile is visible.
+- [x] Zero imports from `src/lib/physics/`, `src/lib/scoring/`, or `src/lib/ui/`.
+- [x] Unit tests for asset manifest mapping (all TileType values covered) — `tests/unit/rendering-assets.test.ts`.
+- [x] Unit test for `GRID_SIZE = 16` — `tests/unit/rendering-assets.test.ts`.
+- [ ] E2E test: page loads, canvas renders, **at least one tile mesh is visible**. *(Current E2E only verifies canvas presence and no console errors — must be strengthened once assets exist.)*
 
 ### Regression Guardrails
 
@@ -150,20 +167,33 @@ export const TILE_SIZE = 1.0;
 #### Scenario: Camera orbit in editor mode
 **Given** the camera rig in `"editor"` mode
 **When** the user drags to rotate the view
-**Then** the camera should orbit around the center of the grid
+**Then** the camera should orbit around the center of the grid `(GRID_SIZE * TILE_SIZE / 2, 0, GRID_SIZE * TILE_SIZE / 2)` = `(8, 0, 8)`
 **And** the camera should support zoom (scroll wheel)
 
 #### Scenario: Environment visual identity
 **Given** a rendered scene
 **When** inspecting the ground plane material
-**Then** it should use a paper/cardboard-like texture or material (not photorealistic, not plain color)
-**And** the directional light should cast from above-and-to-the-side (desk lamp angle)
+**Then** it should use colour `#c4a882` with `roughness: 1.0` and `metalness: 0` (non-photorealistic cardboard look)
+**And** the directional light colour should be warm white (`#fff8f0`) positioned above-and-to-the-side (desk lamp angle)
+**And** the ambient fill should be warm (`#ffeedd`) at intensity ≤ 0.5
+
+#### Scenario: Tile mesh visible after assets loaded
+**Given** the six `.glb` files exist in `static/assets/tiles/`
+**And** a grid with a `STRAIGHT` tile at `(0, 0)`
+**When** the `TrackScene` component renders and assets finish loading
+**Then** a mesh node should be present in the Three.js scene at world position `(0, 0, 0)`
+**And** the mesh should have geometry (vertex count > 0)
 
 ---
 
+## Outstanding Work (before Epic 3 closes)
+
+1. **Download Kenney.nl assets** — Six `.glb` files must be placed in `static/assets/tiles/`. Suggested kit: [Kenney Racing Kit](https://kenney.nl/assets/racing-kit) (CC0). File names must match the paths in `TILE_ASSETS` exactly. Ask before using any non-Kenney source.
+2. **Strengthen E2E test** — Once assets exist, `tests/e2e/scene-renders.test.ts` should assert that at least one Three.js mesh with geometry is present after the canvas loads.
+
 ## Related / Future
 
-- **Chase camera** (Epic 5): `CameraRig.svelte` will gain a `"drive"` mode that follows the car. Placeholder only in this spec.
-- **Car rendering** (Epic 5): A static car model at the start position. Animated driving is Epic 5.
+- **Chase camera** (Epic 5): `CameraRig.svelte` will gain a `"drive"` mode that follows the car. Placeholder (`mode="drive"` renders a static camera at grid centre) is already wired; implementation is Epic 5's responsibility.
+- **Car rendering** (Epic 5): A static car model at the START_FINISH position. Animated driving is Epic 5.
 - **Score visual feedback** (Epic 7): Renderer may subscribe to score events for particle effects or screen flash. Not in this spec.
 - **Paper buildings / scenery** (Epic 9: Polish): Extended environment with folded paper decorations. This spec covers only the ground plane and lighting.
