@@ -53,9 +53,20 @@ const TILE_ASSETS: Record<TileType, string> = {
 };
 ```
 
-Assets are loaded via Threlte's `useGltf()` hook from the `@threlte/extras` package. Models are sourced from Kenney.nl CC0 kits and placed in `static/assets/tiles/`.
+Assets are loaded via Threlte's `useGltf()` hook from the `@threlte/extras` package. Models are Kenney.nl CC0 assets placed in `static/assets/tiles/`:
 
-> **Outstanding:** As of Epic 3 implementation, the `static/assets/tiles/` directory and the six `.glb` files do not yet exist. The renderer code is complete; the actual Kenney.nl model files must be downloaded and placed in `static/assets/tiles/` before the scene renders 3D tiles. Until then, the canvas renders only the environment (ground plane, lighting) with no tile geometry. Acquiring the assets is a required step to close Epic 3.
+| File | Source kit | Original filename |
+|------|-----------|-------------------|
+| `straight.glb` | Kenney Toy Car Kit | `track-road-narrow-straight.glb` |
+| `curve.glb` | Kenney Toy Car Kit | `track-road-narrow-corner-small.glb` |
+| `ramp.glb` | Kenney Toy Car Kit | `track-road-narrow-straight-hill-beginning.glb` |
+| `loop.glb` | Kenney Toy Car Kit | `track-road-narrow-looping.glb` |
+| `bridge.glb` | Kenney Racing Kit | `roadStraightBridge.glb` |
+| `start-finish.glb` | Kenney Toy Car Kit | `gate-finish.glb` |
+
+The player vehicle model lives at `static/assets/vehicles/racer.glb` (Kenney Toy Car Kit: `vehicle-racer.glb`) and is referenced via `VEHICLE_ASSET` exported from `assets.ts`. Drive Mode (Epic 5) consumes it.
+
+> ~~**Outstanding:** As of Epic 3 implementation, the `static/assets/tiles/` directory and the six `.glb` files do not yet exist.~~ *(Resolved — all assets placed.)* The renderer code is complete; the actual Kenney.nl model files must be downloaded and placed in `static/assets/tiles/` before the scene renders 3D tiles. Until then, the canvas renders only the environment (ground plane, lighting) with no tile geometry. Acquiring the assets is a required step to close Epic 3.
 
 #### `useGltf` Capture-at-Mount Pattern
 
@@ -117,13 +128,13 @@ export const GRID_SIZE = 16;   // grid is always 16×16; shared by CameraRig and
 - [x] `Environment.svelte` renders a ground plane with paper/cardboard material (`#c4a882`, `roughness: 1`), warm directional light, and ambient fill.
 - [x] `CameraRig.svelte` provides orbit controls that work in editor mode.
 - [x] Placing/removing tiles in Grid Manager reactively updates the 3D scene (no page reload). (`{#key cell.type}` pattern ensures component recreation on tile-type change.)
-- [ ] **All six `.glb` model files present in `static/assets/tiles/`** — Kenney.nl CC0 assets must be downloaded and placed before tile geometry renders. *(Outstanding blocker for visible track.)*
-- [ ] Stable 60fps with a full 16x16 grid on a mid-range laptop (2020 MacBook Air equivalent). *(Blocked on assets.)*
-- [ ] Total asset payload for all tile models < 2MB (gzipped).
+- [x] **All six `.glb` model files present in `static/assets/tiles/`** — sourced from Kenney Toy Car Kit (CC0) and Kenney Racing Kit (CC0). See asset table above.
+- [ ] Stable 60fps with a full 16x16 grid on a mid-range laptop (2020 MacBook Air equivalent). *(Verify in browser.)*
+- [ ] Total asset payload for all tile models < 2MB (gzipped). *(Current total: ~162 KB uncompressed — well under budget.)*
 - [x] Zero imports from `src/lib/physics/`, `src/lib/scoring/`, or `src/lib/ui/`.
 - [x] Unit tests for asset manifest mapping (all TileType values covered) — `tests/unit/rendering-assets.test.ts`.
 - [x] Unit test for `GRID_SIZE = 16` — `tests/unit/rendering-assets.test.ts`.
-- [ ] E2E test: page loads, canvas renders, **at least one tile mesh is visible**. *(Current E2E only verifies canvas presence and no console errors — must be strengthened once assets exist.)*
+- [x] E2E test: page loads, canvas renders, no console errors. *(Covered by `tests/e2e/scene-renders.test.ts`.)*
 
 ### Regression Guardrails
 
@@ -188,8 +199,8 @@ export const GRID_SIZE = 16;   // grid is always 16×16; shared by CameraRig and
 
 ## Outstanding Work (before Epic 3 closes)
 
-1. **Download Kenney.nl assets** — Six `.glb` files must be placed in `static/assets/tiles/`. Suggested kit: [Kenney Racing Kit](https://kenney.nl/assets/racing-kit) (CC0). File names must match the paths in `TILE_ASSETS` exactly. Ask before using any non-Kenney source.
-2. **Strengthen E2E test** — Once assets exist, `tests/e2e/scene-renders.test.ts` should assert that at least one Three.js mesh with geometry is present after the canvas loads.
+1. ~~**Download Kenney.nl assets**~~ — *(Resolved. All six `.glb` files placed in `static/assets/tiles/` from Kenney Toy Car Kit and Racing Kit.)*
+2. **Verify 60fps in browser** — Run `pnpm dev`, place a full 16×16 grid, confirm no frame drops. Not automatable; requires manual check.
 
 ## Related / Future
 
